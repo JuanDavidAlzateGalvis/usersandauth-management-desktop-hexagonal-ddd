@@ -14,7 +14,13 @@ public enum MenuOption {
   UPDATE_USER(4, "Update user"),
   DELETE_USER(5, "Delete user"),
   LOGIN(6, "Login"),
-  EXIT(0, "Exit");
+    CREATE_AUTHOR(7, "Create Author"),
+    UPDATE_AUTHOR(8, "Update Author"),
+    FIND_AUTHOR(9, "Find Author By ID"),
+    LIST_AUTHORS(10, "List All Authors"),
+    DELETE_AUTHOR(11, "Delete Author"),
+    EXIT(0, "Exit");
+
 
   private final int number;
   private final String description;
