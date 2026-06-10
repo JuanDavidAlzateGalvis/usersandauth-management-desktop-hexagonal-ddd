@@ -21,6 +21,12 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByNamePort;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByWorkCenterPort;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByCountryPort;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByNamePort;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByWorkCenterPort;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByCountryPort;
 
 @Log
 @RequiredArgsConstructor
@@ -30,7 +36,10 @@ public final class AuthorRepositoryMySQL
         GetAuthorByIdPort,
         GetAuthorByEmailPort,
         GetAllAuthorsPort,
-        DeleteAuthorPort {
+        DeleteAuthorPort,
+        GetAuthorsByNamePort,
+        GetAuthorsByWorkCenterPort,
+        GetAuthorsByCountryPort {
 
     private static final String SQL_INSERT =
             "INSERT INTO authors (id, full_name, work_center, email, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
@@ -42,10 +51,34 @@ public final class AuthorRepositoryMySQL
             "SELECT id, full_name, work_center, email, created_at, updated_at FROM authors WHERE id = ? LIMIT 1";
 
     private static final String SQL_SELECT_BY_EMAIL =
+        
             "SELECT id, full_name, work_center, email, created_at, updated_at FROM authors WHERE email = ? LIMIT 1";
 
     private static final String SQL_SELECT_ALL =
             "SELECT id, full_name, work_center, email, created_at, updated_at FROM authors ORDER BY full_name ASC";
+    private static final String SQL_SELECT_BY_NAME =
+        """
+        SELECT id, full_name, work_center, email, created_at, updated_at
+        FROM authors
+        WHERE LOWER(full_name) LIKE LOWER(?)
+        ORDER BY full_name ASC
+        """;
+
+private static final String SQL_SELECT_BY_WORK_CENTER =
+        """
+        SELECT id, full_name, work_center, email, created_at, updated_at
+        FROM authors
+        WHERE LOWER(work_center) LIKE LOWER(?)
+        ORDER BY full_name ASC
+        """;
+
+private static final String SQL_SELECT_BY_COUNTRY =
+        """
+        SELECT id, full_name, work_center, email, created_at, updated_at
+        FROM authors
+        WHERE LOWER(work_center) LIKE LOWER(?)
+        ORDER BY full_name ASC
+        """;
 
     private static final String SQL_DELETE = "DELETE FROM authors WHERE id = ?";
 
@@ -137,8 +170,62 @@ public final class AuthorRepositoryMySQL
         }
     }
 
-    private AuthorModel findByIdOrFail(final AuthorId authorId) {
-        return getById(authorId)
-                .orElseThrow(() -> AuthorNotFoundException.becauseIdWasNotFound(authorId.value()));
+   private AuthorModel findByIdOrFail(final AuthorId authorId) {
+    return getById(authorId)
+            .orElseThrow(() -> AuthorNotFoundException.becauseIdWasNotFound(authorId.value()));
+}
+
+@Override
+public List<AuthorModel> getByName(final String name) {
+
+    try (final PreparedStatement statement =
+                 connection.prepareStatement(SQL_SELECT_BY_NAME)) {
+
+        statement.setString(1, "%" + name + "%");
+
+        final ResultSet resultSet = statement.executeQuery();
+
+        return AuthorPersistenceMapper.fromResultSetToModelList(resultSet);
+
+    } catch (final SQLException exception) {
+
+        throw PersistenceException.becauseFindAllFailed(exception);
     }
+}
+
+@Override
+public List<AuthorModel> getByWorkCenter(final String workCenter) {
+
+    try (final PreparedStatement statement =
+                 connection.prepareStatement(SQL_SELECT_BY_WORK_CENTER)) {
+
+        statement.setString(1, "%" + workCenter + "%");
+
+        final ResultSet resultSet = statement.executeQuery();
+
+        return AuthorPersistenceMapper.fromResultSetToModelList(resultSet);
+
+    } catch (final SQLException exception) {
+
+        throw PersistenceException.becauseFindAllFailed(exception);
+    }
+}
+
+@Override
+public List<AuthorModel> getByCountry(final String country) {
+
+    try (final PreparedStatement statement =
+                 connection.prepareStatement(SQL_SELECT_BY_COUNTRY)) {
+
+        statement.setString(1, "%" + country + "%");
+
+        final ResultSet resultSet = statement.executeQuery();
+
+        return AuthorPersistenceMapper.fromResultSetToModelList(resultSet);
+
+    } catch (final SQLException exception) {
+
+        throw PersistenceException.becauseFindAllFailed(exception);
+    }
+}
 }
