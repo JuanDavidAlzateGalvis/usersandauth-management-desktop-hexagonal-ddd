@@ -29,6 +29,10 @@ import com.jcaa.usersmanagement.application.service.DeleteAuthorService;
 import com.jcaa.usersmanagement.application.service.GetAuthorByIdService;
 import com.jcaa.usersmanagement.application.service.GetAllAuthorsService;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.AuthorController;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByNameService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByWorkCenterService;
+import com.jcaa.usersmanagement.application.service.GetAuthorByEmailService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByCountryService;
 
 import java.sql.Connection;
 import jakarta.validation.Validator;
