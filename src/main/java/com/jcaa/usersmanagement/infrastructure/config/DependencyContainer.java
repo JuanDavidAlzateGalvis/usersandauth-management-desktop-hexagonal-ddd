@@ -82,14 +82,16 @@ public final class DependencyContainer {
         final GetAllUsersUseCase getAllUsersUseCase = new GetAllUsersService(userRepository);
         final LoginUseCase loginUseCase = new LoginService(userRepository, validator);
 
-        this.userController =
-                new UserController(
-                        createUserUseCase,
-                        updateUserUseCase,
-                        deleteUserUseCase,
-                        getUserByIdUseCase,
-                        getAllUsersUseCase,
-                        loginUseCase);
+        this.authorController = new AuthorController(
+        createAuthorService,
+        updateAuthorService,
+        deleteAuthorService,
+        getAuthorByIdService,
+        getAllAuthorsService,
+        getAuthorByEmailService,
+        getAuthorsByNameService,
+        getAuthorsByWorkCenterService,
+        getAuthorsByCountryService);
 
         // ==========================================
         // INYECCIÓN MÓDULO AUTHOR (ACTIVIDAD 3)
@@ -101,6 +103,17 @@ public final class DependencyContainer {
         final DeleteAuthorService deleteAuthorService = new DeleteAuthorService(authorRepository, authorRepository, validator);
         final GetAuthorByIdService getAuthorByIdService = new GetAuthorByIdService(authorRepository, validator);
         final GetAllAuthorsService getAllAuthorsService = new GetAllAuthorsService(authorRepository);
+        final GetAuthorByEmailService getAuthorByEmailService =
+        new GetAuthorByEmailService(authorRepository, validator);
+
+        final GetAuthorsByNameService getAuthorsByNameService =
+                new GetAuthorsByNameService(authorRepository, validator);
+
+        final GetAuthorsByWorkCenterService getAuthorsByWorkCenterService =
+                new GetAuthorsByWorkCenterService(authorRepository, validator);
+
+        final GetAuthorsByCountryService getAuthorsByCountryService =
+                new GetAuthorsByCountryService(authorRepository, validator);
 
         this.authorController = new AuthorController(
                 createAuthorService,
