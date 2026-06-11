@@ -29,6 +29,10 @@ import com.jcaa.usersmanagement.application.service.DeleteAuthorService;
 import com.jcaa.usersmanagement.application.service.GetAuthorByIdService;
 import com.jcaa.usersmanagement.application.service.GetAllAuthorsService;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.AuthorController;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByNameService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByWorkCenterService;
+import com.jcaa.usersmanagement.application.service.GetAuthorByEmailService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByCountryService;
 
 import java.sql.Connection;
 import jakarta.validation.Validator;
@@ -78,14 +82,16 @@ public final class DependencyContainer {
         final GetAllUsersUseCase getAllUsersUseCase = new GetAllUsersService(userRepository);
         final LoginUseCase loginUseCase = new LoginService(userRepository, validator);
 
-        this.userController =
-                new UserController(
-                        createUserUseCase,
-                        updateUserUseCase,
-                        deleteUserUseCase,
-                        getUserByIdUseCase,
-                        getAllUsersUseCase,
-                        loginUseCase);
+        this.authorController = new AuthorController(
+        createAuthorService,
+        updateAuthorService,
+        deleteAuthorService,
+        getAuthorByIdService,
+        getAllAuthorsService,
+        getAuthorByEmailService,
+        getAuthorsByNameService,
+        getAuthorsByWorkCenterService,
+        getAuthorsByCountryService);
 
         // ==========================================
         // INYECCIÓN MÓDULO AUTHOR (ACTIVIDAD 3)
@@ -97,6 +103,17 @@ public final class DependencyContainer {
         final DeleteAuthorService deleteAuthorService = new DeleteAuthorService(authorRepository, authorRepository, validator);
         final GetAuthorByIdService getAuthorByIdService = new GetAuthorByIdService(authorRepository, validator);
         final GetAllAuthorsService getAllAuthorsService = new GetAllAuthorsService(authorRepository);
+        final GetAuthorByEmailService getAuthorByEmailService =
+        new GetAuthorByEmailService(authorRepository, validator);
+
+        final GetAuthorsByNameService getAuthorsByNameService =
+                new GetAuthorsByNameService(authorRepository, validator);
+
+        final GetAuthorsByWorkCenterService getAuthorsByWorkCenterService =
+                new GetAuthorsByWorkCenterService(authorRepository, validator);
+
+        final GetAuthorsByCountryService getAuthorsByCountryService =
+                new GetAuthorsByCountryService(authorRepository, validator);
 
         this.authorController = new AuthorController(
                 createAuthorService,
