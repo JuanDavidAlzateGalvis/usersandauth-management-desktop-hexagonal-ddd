@@ -1,8 +1,8 @@
 package com.jcaa.usersmanagement.application.service;
 
-import com.jcaa.usersmanagement.application.port.in.GetAuthorsByNameUseCase;
-import com.jcaa.usersmanagement.application.port.out.GetAuthorsByNamePort;
-import com.jcaa.usersmanagement.application.service.dto.query.GetAuthorsByNameQuery;
+import com.jcaa.usersmanagement.application.port.in.GetAuthorsByWorkCenterUseCase;
+import com.jcaa.usersmanagement.application.port.out.GetAuthorsByWorkCenterPort;
+import com.jcaa.usersmanagement.application.service.dto.query.GetAuthorsByWorkCenterQuery;
 import com.jcaa.usersmanagement.domain.model.AuthorModel;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -12,19 +12,20 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public final class GetAuthorsByNameService implements GetAuthorsByNameUseCase {
+public final class GetAuthorsByWorkCenterService implements GetAuthorsByWorkCenterUseCase {
 
-    private final GetAuthorsByNamePort getAuthorsByNamePort;
+    private final GetAuthorsByWorkCenterPort getAuthorsByWorkCenterPort;
     private final Validator validator;
 
     @Override
-    public List<AuthorModel> execute(final GetAuthorsByNameQuery query) {
+    public List<AuthorModel> execute(final GetAuthorsByWorkCenterQuery query) {
         validateQuery(query);
-        return getAuthorsByNamePort.getByName(query.name());
+        return getAuthorsByWorkCenterPort.getByWorkCenter(query.workCenter());
     }
 
-    private void validateQuery(final GetAuthorsByNameQuery query) {
-        final Set<ConstraintViolation<GetAuthorsByNameQuery>> violations = validator.validate(query);
+    private void validateQuery(final GetAuthorsByWorkCenterQuery query) {
+        final Set<ConstraintViolation<GetAuthorsByWorkCenterQuery>> violations =
+                validator.validate(query);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }

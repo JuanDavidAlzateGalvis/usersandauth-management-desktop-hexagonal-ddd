@@ -1,12 +1,13 @@
 package com.jcaa.usersmanagement.infrastructure.config;
 
-// --- IMPORTS ORIGINALES DEL PROFESOR (USERS) ---
+// ── Puertos de entrada – Users ────────────────────────────────────────────────
 import com.jcaa.usersmanagement.application.port.in.CreateUserUseCase;
 import com.jcaa.usersmanagement.application.port.in.DeleteUserUseCase;
 import com.jcaa.usersmanagement.application.port.in.GetAllUsersUseCase;
 import com.jcaa.usersmanagement.application.port.in.GetUserByIdUseCase;
 import com.jcaa.usersmanagement.application.port.in.LoginUseCase;
 import com.jcaa.usersmanagement.application.port.in.UpdateUserUseCase;
+// ── Servicios – Users ─────────────────────────────────────────────────────────
 import com.jcaa.usersmanagement.application.service.CreateUserService;
 import com.jcaa.usersmanagement.application.service.DeleteUserService;
 import com.jcaa.usersmanagement.application.service.EmailNotificationService;
@@ -14,105 +15,101 @@ import com.jcaa.usersmanagement.application.service.GetAllUsersService;
 import com.jcaa.usersmanagement.application.service.GetUserByIdService;
 import com.jcaa.usersmanagement.application.service.LoginService;
 import com.jcaa.usersmanagement.application.service.UpdateUserService;
+// ── Servicios – Authors (Unidades 3 y 4) ─────────────────────────────────────
+import com.jcaa.usersmanagement.application.service.CreateAuthorService;
+import com.jcaa.usersmanagement.application.service.DeleteAuthorService;
+import com.jcaa.usersmanagement.application.service.GetAllAuthorsService;
+import com.jcaa.usersmanagement.application.service.GetAuthorByEmailService;
+import com.jcaa.usersmanagement.application.service.GetAuthorByIdService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByCountryService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByNameService;
+import com.jcaa.usersmanagement.application.service.GetAuthorsByWorkCenterService;
+import com.jcaa.usersmanagement.application.service.UpdateAuthorService;
+// ── Infraestructura ───────────────────────────────────────────────────────────
 import com.jcaa.usersmanagement.infrastructure.adapter.email.JavaMailEmailSenderAdapter;
 import com.jcaa.usersmanagement.infrastructure.adapter.email.SmtpConfig;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConfig;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConnectionFactory;
+import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.AuthorRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.UserRepositoryMySQL;
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.AuthorController;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.UserController;
 
-// --- NUEVOS IMPORTS PARA EL MÓDULO AUTHOR (ACTIVIDAD 3) ---
-import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.AuthorRepositoryMySQL;
-import com.jcaa.usersmanagement.application.service.CreateAuthorService;
-import com.jcaa.usersmanagement.application.service.UpdateAuthorService;
-import com.jcaa.usersmanagement.application.service.DeleteAuthorService;
-import com.jcaa.usersmanagement.application.service.GetAuthorByIdService;
-import com.jcaa.usersmanagement.application.service.GetAllAuthorsService;
-import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.AuthorController;
-import com.jcaa.usersmanagement.application.service.GetAuthorsByNameService;
-import com.jcaa.usersmanagement.application.service.GetAuthorsByWorkCenterService;
-import com.jcaa.usersmanagement.application.service.GetAuthorByEmailService;
-import com.jcaa.usersmanagement.application.service.GetAuthorsByCountryService;
-
-import java.sql.Connection;
 import jakarta.validation.Validator;
+import java.sql.Connection;
 
 public final class DependencyContainer {
 
-    private static final String DB_HOST = "db.host";
-    private static final String DB_PORT = "db.port";
-    private static final String DB_NAME = "db.name";
-    private static final String DB_USER = "db.username";
+    private static final String DB_HOST     = "db.host";
+    private static final String DB_PORT     = "db.port";
+    private static final String DB_NAME     = "db.name";
+    private static final String DB_USER     = "db.username";
     private static final String DB_PASSWORD = "db.password";
 
-    private static final String SMTP_HOST = "smtp.host";
-    private static final String SMTP_PORT = "smtp.port";
-    private static final String SMTP_USER = "smtp.username";
-    private static final String SMTP_PASSWORD = "smtp.password";
-    private static final String SMTP_FROM = "smtp.from.address";
+    private static final String SMTP_HOST      = "smtp.host";
+    private static final String SMTP_PORT      = "smtp.port";
+    private static final String SMTP_USER      = "smtp.username";
+    private static final String SMTP_PASSWORD  = "smtp.password";
+    private static final String SMTP_FROM      = "smtp.from.address";
     private static final String SMTP_FROM_NAME = "smtp.from.name";
 
-    private final UserController userController;
-    // Añadimos el controlador de autores
+    private final UserController   userController;
     private final AuthorController authorController;
 
     public DependencyContainer() {
         final AppProperties properties = new AppProperties();
-        final Connection connection = buildDatabaseConnection(properties);
+        final Connection    connection = buildDatabaseConnection(properties);
+        final Validator     validator  = ValidatorProvider.buildValidator();
 
-        // Construir Validator para las validaciones en la capa de aplicación
-        final Validator validator = ValidatorProvider.buildValidator();
-
-        // ==========================================
-        // INYECCIÓN MÓDULO USER (ORIGINAL)
-        // ==========================================
+        // ── Módulo Users ──────────────────────────────────────────────────────
         final UserRepositoryMySQL userRepository = new UserRepositoryMySQL(connection);
 
         final JavaMailEmailSenderAdapter emailSender =
                 new JavaMailEmailSenderAdapter(buildSmtpConfig(properties));
-        final EmailNotificationService emailNotification = new EmailNotificationService(emailSender);
+        final EmailNotificationService emailNotification =
+                new EmailNotificationService(emailSender);
 
-        final CreateUserUseCase createUserUseCase =
+        final CreateUserUseCase  createUserUseCase  =
                 new CreateUserService(userRepository, userRepository, emailNotification, validator);
-        final UpdateUserUseCase updateUserUseCase =
-                new UpdateUserService(userRepository, userRepository, userRepository, emailNotification, validator);
-        final DeleteUserUseCase deleteUserUseCase =
+        final UpdateUserUseCase  updateUserUseCase  =
+                new UpdateUserService(userRepository, userRepository, userRepository,
+                        emailNotification, validator);
+        final DeleteUserUseCase  deleteUserUseCase  =
                 new DeleteUserService(userRepository, userRepository, validator);
-        final GetUserByIdUseCase getUserByIdUseCase = new GetUserByIdService(userRepository, validator);
-        final GetAllUsersUseCase getAllUsersUseCase = new GetAllUsersService(userRepository);
-        final LoginUseCase loginUseCase = new LoginService(userRepository, validator);
+        final GetUserByIdUseCase getUserByIdUseCase =
+                new GetUserByIdService(userRepository, validator);
+        final GetAllUsersUseCase getAllUsersUseCase =
+                new GetAllUsersService(userRepository);
+        final LoginUseCase loginUseCase =
+                new LoginService(userRepository, validator);
 
-        this.authorController = new AuthorController(
-        createAuthorService,
-        updateAuthorService,
-        deleteAuthorService,
-        getAuthorByIdService,
-        getAllAuthorsService,
-        getAuthorByEmailService,
-        getAuthorsByNameService,
-        getAuthorsByWorkCenterService,
-        getAuthorsByCountryService);
+        this.userController = new UserController(
+                createUserUseCase, updateUserUseCase, deleteUserUseCase,
+                getUserByIdUseCase, getAllUsersUseCase, loginUseCase);
 
-        // ==========================================
-        // INYECCIÓN MÓDULO AUTHOR (ACTIVIDAD 3)
-        // ==========================================
+        // ── Módulo Authors (Unidades 3 y 4) ───────────────────────────────────
         final AuthorRepositoryMySQL authorRepository = new AuthorRepositoryMySQL(connection);
 
-        final CreateAuthorService createAuthorService = new CreateAuthorService(authorRepository, authorRepository, validator);
-        final UpdateAuthorService updateAuthorService = new UpdateAuthorService(authorRepository, authorRepository, authorRepository, validator);
-        final DeleteAuthorService deleteAuthorService = new DeleteAuthorService(authorRepository, authorRepository, validator);
-        final GetAuthorByIdService getAuthorByIdService = new GetAuthorByIdService(authorRepository, validator);
-        final GetAllAuthorsService getAllAuthorsService = new GetAllAuthorsService(authorRepository);
-        final GetAuthorByEmailService getAuthorByEmailService =
-        new GetAuthorByEmailService(authorRepository, validator);
+        // CRUDL (Unidad 3)
+        final CreateAuthorService  createAuthorService  =
+                new CreateAuthorService(authorRepository, authorRepository, validator);
+        final UpdateAuthorService  updateAuthorService  =
+                new UpdateAuthorService(authorRepository, authorRepository, authorRepository, validator);
+        final DeleteAuthorService  deleteAuthorService  =
+                new DeleteAuthorService(authorRepository, authorRepository, validator);
+        final GetAuthorByIdService getAuthorByIdService =
+                new GetAuthorByIdService(authorRepository, validator);
+        final GetAllAuthorsService getAllAuthorsService  =
+                new GetAllAuthorsService(authorRepository);
 
-        final GetAuthorsByNameService getAuthorsByNameService =
+        // 5 Consultas (Unidad 4)
+        final GetAuthorByEmailService      getAuthorByEmailService      =
+                new GetAuthorByEmailService(authorRepository, validator);
+        final GetAuthorsByNameService      getAuthorsByNameService      =
                 new GetAuthorsByNameService(authorRepository, validator);
-
         final GetAuthorsByWorkCenterService getAuthorsByWorkCenterService =
                 new GetAuthorsByWorkCenterService(authorRepository, validator);
-
-        final GetAuthorsByCountryService getAuthorsByCountryService =
+        final GetAuthorsByCountryService   getAuthorsByCountryService   =
                 new GetAuthorsByCountryService(authorRepository, validator);
 
         this.authorController = new AuthorController(
@@ -120,27 +117,30 @@ public final class DependencyContainer {
                 updateAuthorService,
                 deleteAuthorService,
                 getAuthorByIdService,
-                getAllAuthorsService
-        );
+                getAllAuthorsService,
+                getAuthorByEmailService,
+                getAuthorsByNameService,
+                getAuthorsByWorkCenterService,
+                getAuthorsByCountryService);
     }
 
     public UserController userController() {
         return userController;
     }
 
-    // Getter para que los handlers puedan usar el AuthorController
     public AuthorController authorController() {
         return authorController;
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
     private static Connection buildDatabaseConnection(final AppProperties properties) {
-        final DatabaseConfig config =
-                new DatabaseConfig(
-                        properties.get(DB_HOST),
-                        properties.getInt(DB_PORT),
-                        properties.get(DB_NAME),
-                        properties.get(DB_USER),
-                        properties.get(DB_PASSWORD));
+        final DatabaseConfig config = new DatabaseConfig(
+                properties.get(DB_HOST),
+                properties.getInt(DB_PORT),
+                properties.get(DB_NAME),
+                properties.get(DB_USER),
+                properties.get(DB_PASSWORD));
         return DatabaseConnectionFactory.createConnection(config);
     }
 
